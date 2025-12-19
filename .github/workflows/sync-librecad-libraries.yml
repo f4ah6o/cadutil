@@ -1,0 +1,82 @@
+name: Sync LibreCAD Libraries
+
+on:
+  workflow_dispatch:
+    inputs:
+      librecad_ref:
+        description: 'LibreCAD ref to sync from (branch, tag, or commit)'
+        required: false
+        default: 'master'
+  schedule:
+    # Run weekly on Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-libraries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout LibreCAD
+        uses: actions/checkout@v4
+        with:
+          repository: LibreCAD/LibreCAD
+          path: _librecad_upstream
+          ref: ${{ github.event.inputs.librecad_ref || 'master' }}
+          sparse-checkout: |
+            libraries
+
+      - name: Sync libraries directory
+        run: |
+          # Remove old libraries (but keep any local-only files if needed)
+          rm -rf libraries
+          
+          # Copy from upstream
+          cp -r _librecad_upstream/libraries libraries
+          
+          # Get the upstream commit hash
+          cd _librecad_upstream
+          UPSTREAM_COMMIT=$(git rev-parse HEAD)
+          UPSTREAM_SHORT=$(git rev-parse --short HEAD)
+          cd ..
+          
+          # Clean up
+          rm -rf _librecad_upstream
+          
+          # Store for later steps
+          echo "UPSTREAM_COMMIT=$UPSTREAM_COMMIT" >> $GITHUB_ENV
+          echo "UPSTREAM_SHORT=$UPSTREAM_SHORT" >> $GITHUB_ENV
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet libraries/; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected:"
+            git diff --stat libraries/
+          fi
+
+      - name: Create Pull Request
+        if: steps.check_changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: sync libraries from LibreCAD@${{ env.UPSTREAM_SHORT }}"
+          title: "chore: sync libraries from LibreCAD@${{ env.UPSTREAM_SHORT }}"
+          body: |
+            This PR syncs the `libraries/` directory from [LibreCAD](https://github.com/LibreCAD/LibreCAD).
+            
+            **Source commit:** LibreCAD/LibreCAD@${{ env.UPSTREAM_COMMIT }}
+            
+            ---
+            *This PR was automatically created by the sync-librecad-libraries workflow.*
+          branch: sync-librecad-libraries
+          delete-branch: true
+          labels: dependencies

@@ -1,0 +1,10 @@
+# globs, anywhere
+*.o
+*.lo
+*.la
+
+*.autosave
+*~
+*.patch
+*.rej
+\#*.dxf

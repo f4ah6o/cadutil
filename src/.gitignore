@@ -1,0 +1,19 @@
+# Build outputs
+core/zig-out/
+core/.zig-cache/
+cli/target/
+
+# Test files
+*.o
+test_simple
+test_verbose
+test_sizeof
+output.dxf
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
