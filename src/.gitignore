@@ -2,6 +2,7 @@
 core/zig-out/
 core/.zig-cache/
 cli/target/
+cli/vendor/
 
 # Test files
 *.o

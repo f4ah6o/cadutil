@@ -9,4 +9,3 @@
 *.rej
 \#*.dxf
 
-src/cli/vendor/
