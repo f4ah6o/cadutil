@@ -8,3 +8,5 @@
 *.patch
 *.rej
 \#*.dxf
+
+src/cli/vendor/

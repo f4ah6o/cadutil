@@ -16,7 +16,31 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  build-libs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+
+      - name: Build static libraries for all platforms
+        run: |
+          chmod +x scripts/build-libs.sh
+          ./scripts/build-libs.sh
+
+      - name: Upload vendor artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendor-libs
+          path: src/cli/vendor/
+          retention-days: 1
+
   publish:
+    needs: build-libs
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -25,18 +49,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download vendor artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: vendor-libs
+          path: src/cli/vendor/
+
       - name: Setup Rust
         uses: dtolnay/rust-action@stable
 
-      - name: Setup Zig (for core build)
-        uses: goto-bus-stop/setup-zig@v2
-        with:
-          version: 0.13.0
-
-      - name: Build core library
-        run: |
-          cd ../core
-          zig build
+      - name: Install libc++ (required for Zig-built libraries)
+        run: sudo apt-get update && sudo apt-get install -y libc++-dev libc++abi-dev
 
       - name: Verify package
         run: cargo publish --dry-run
