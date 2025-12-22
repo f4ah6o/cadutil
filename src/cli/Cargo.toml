@@ -13,7 +13,6 @@ include = [
     "README.md",
     "build.rs",
     "src/**",
-    "vendor/**",
 ]
 
 [[bin]]
