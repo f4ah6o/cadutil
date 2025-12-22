@@ -10,19 +10,18 @@ VENDOR_DIR="$ROOT_DIR/src/cli/vendor"
 # Target platforms
 TARGETS=(
     "x86_64-linux-gnu"
-    "aarch64-linux-gnu"
-    "x86_64-macos"
-    "aarch64-macos"
-    "x86_64-windows-gnu"
+    # "aarch64-linux-gnu"
+    # "aarch64-macos"
+    # "x86_64-windows-gnu"
 )
 
 # Corresponding Rust target triples
 RUST_TARGETS=(
     "x86_64-unknown-linux-gnu"
-    "aarch64-unknown-linux-gnu"
-    "x86_64-apple-darwin"
-    "aarch64-apple-darwin"
-    "x86_64-pc-windows-gnu"
+    # "aarch64-unknown-linux-gnu"
+    # "x86_64-apple-darwin"
+    # "aarch64-apple-darwin"
+    # "x86_64-pc-windows-gnu"
 )
 
 echo "Building static libraries for all platforms..."
